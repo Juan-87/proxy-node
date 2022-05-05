@@ -1,16 +1,26 @@
-class Router {
-    constructor(app) {
-        this.app = app;
+const { Methods } = require('../config/index');
 
-        this.init();
+class Sender {
+    static async request(req) {
+        const { api } = req.params;
+        const path = req.originalUrl.replace(`/${ api }`, '');
+
+        return { api, path };
     }
+}
 
-    init() {
-        this.app.get('/:cli/*', (req, res) => {
-            const api = req.params.cli;
-            const path = req.originalUrl.replace(`/${ req.params.cli }`, '');
+class Router {
+    static init(app, port) {
+        Methods.forEach(method => {
+            app[method.toLowerCase()]('/:api/*', async (req, res) => {
+                const response = await Sender.request(req);
+    
+                res.status(200).json(response);
+            });
+        });
 
-            res.status(200).json({ api, path });
+        app.listen(port, () => {
+            console.log(`Proxy server is running on port ${ port }`);
         });
     }
 }
