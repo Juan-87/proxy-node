@@ -1,11 +1,11 @@
-const { Methods } = require('../config/index');
+const { Methods, Apis } = require('../config/index');
 
 class Sender {
     static async request(req, method) {
         const { api } = req.params;
         const path = req.originalUrl.replace(`/${ api }`, '');
 
-        return { api, path, method };
+        return { api, path, method, api: Apis[api] };
     }
 }
 
