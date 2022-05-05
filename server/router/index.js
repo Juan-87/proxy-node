@@ -7,7 +7,7 @@ class Sender {
         const { api } = req.params;
         const query = req.originalUrl.replace(`/${ api }`, '');
 
-        let data = {};
+        let data = null;
         let status = 404;
 
         try {
@@ -19,7 +19,6 @@ class Sender {
                 data = await data.json();
             }
         } catch (err) {
-            data = err;
             status = 500;
         }
 
@@ -33,7 +32,11 @@ class Router {
             app[method.toLowerCase()]('/:api/*', async (req, res) => {
                 const response = await Sender.request(req, method);
     
-                res.status(response.status).json(response.data);
+                if (response.status != 200) {
+                    res.sendStatus(response.status);
+                } else {
+                    res.status(response.status).json(response.data);
+                }
             });
         });
 
