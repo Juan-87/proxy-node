@@ -1,11 +1,29 @@
 const { Methods, Apis } = require('../config/index');
 
+const fetch = require('node-fetch');
+
 class Sender {
     static async request(req, method) {
         const { api } = req.params;
-        const path = req.originalUrl.replace(`/${ api }`, '');
+        const query = req.originalUrl.replace(`/${ api }`, '');
 
-        return { api, path, method, api: Apis[api] };
+        let data = {};
+        let status = 404;
+
+        try {
+            if (typeof Apis[api] != 'undefined') {
+                const url = `${ Apis[api].path }${ query }`;
+
+                data = await fetch(url, { method });
+                status = data.status;
+                data = await data.json();
+            }
+        } catch (err) {
+            data = err;
+            status = 500;
+        }
+
+        return { data, status };
     }
 }
 
@@ -15,7 +33,7 @@ class Router {
             app[method.toLowerCase()]('/:api/*', async (req, res) => {
                 const response = await Sender.request(req, method);
     
-                res.status(200).json(response);
+                res.status(response.status).json(response.data);
             });
         });
 
