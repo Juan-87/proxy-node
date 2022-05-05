@@ -1,0 +1,10 @@
+version: '3.2'
+
+services: 
+  server: 
+    container_name: proxy-server
+    build: ./server
+    volumes: 
+      - ./server:/home/node/server
+    ports: 
+      - '3000:3000' 
