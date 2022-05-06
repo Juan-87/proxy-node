@@ -1,33 +1,53 @@
-const cache = {};
+const redis = require('redis');
 
-const getCache = function(key, max, window) {
-    if (!cache[key]) {
-        cache[key] = {
-            count: max,
-            timestamp: Date.now()
-        };
+const Cache = require('../../cache');
+
+const cache = Cache.getInstance(); 
+
+const getCache = async (key, max, window) => {
+    try {
+        let value = await cache.get(key);
+
+        if (!value) {
+            value = {
+                count: max,
+                timestamp: Date.now()
+            };
+
+            cache.set(key, JSON.stringify(value));
+        } else {
+            value = JSON.parse(value);
+        }
+
+        const now = Date.now();
+        const diff = now - value.timestamp;
+
+        if (diff > window) {
+            value.count = max;
+            value.timestamp = now;
+
+            cache.set(key, JSON.stringify(value));
+        }
+
+        return value;
+    } catch (err) {
+        throw new Error(err);
     }
-
-    const now = Date.now();
-    const diff = now - cache[key].timestamp;
-    if (diff > window) {
-        cache[key].count = max;
-        cache[key].timestamp = now;
-    }
-
-    return cache[key];
 }
 
 class Limiter {
     constructor() {}
 
-    check(key, window, max) {
+    async check(key, window, max) {
         let rta = false;
 
-        const cacheData = getCache(key, max, window);
+        const cacheData = await getCache(key, max, window);
 
         if (cacheData.count > 0) {
             cacheData.count--;
+
+            cache.set(key, JSON.stringify(cacheData));
+
             rta = true;
         }
 

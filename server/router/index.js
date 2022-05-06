@@ -4,7 +4,10 @@ const RateLimit = require('./middlewares/RateLimit');
 
 class Router {
     static init(app, port) {
-        app.use(RateLimit);
+        app.use(RateLimit.apiValidation);
+        app.use(RateLimit.apiEndpointValidation);
+        app.use(RateLimit.apiIpValidation);
+        app.use(RateLimit.apiIpEndpointValidation);
 
         Methods.forEach(method => {
             app[method.toLowerCase()]('/:api/*', async (req, res) => {
@@ -18,8 +21,12 @@ class Router {
             });
         });
 
-        app.listen(port, () => {
+        const server = app.listen(port, () => {
             console.log(`Proxy server is running on port ${ port }`);
+        });
+
+        process.on('SIGTERM', () => {
+            server.end();
         });
     }
 }

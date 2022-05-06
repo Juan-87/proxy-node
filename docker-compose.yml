@@ -1,4 +1,4 @@
-version: '3.2'
+version: '3.5'
 
 services: 
   server: 
@@ -10,3 +10,8 @@ services:
       - '3000:3000' 
     env_file:
       - .env
+    depends_on:
+      - redis
+
+  redis: 
+    image: 'redis:alpine'

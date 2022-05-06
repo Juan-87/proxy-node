@@ -1,10 +1,13 @@
 const Util = require('../util');
+const Cache = require('../../cache');
 
 const fetch = require('node-fetch');
 
+const cache = Cache.getInstance(); 
+
 class Sender {
     static async request(req, method) {
-        const { api, query } = Util.apiAndMethod(req);
+        const { api, query, slug } = Util.apiAndMethod(req);
 
         let data = null;
         let status = 404;
@@ -13,9 +16,28 @@ class Sender {
             if (typeof api != 'undefined') {
                 const url = `${ api.path }/${ query }`;
 
-                data = await fetch(url, { method });
-                status = data.status;
-                data = await data.json();
+                const key = `response_api_${ slug }_endpoint_${ query }`;
+                let response = await cache.get(key);
+                
+                const now = Date.now();
+                const diff = (response != null) ? now - JSON.parse(response).timestamp : 0;
+
+                if (response == null || diff > api.cache) {
+                    data = await fetch(url, { method });
+                    status = data.status;
+                    data = await data.json();
+
+                    const timestamp = Date.now();
+                    cache.set(key, JSON.stringify({
+                        status,
+                        data,
+                        timestamp
+                    }));
+                } else {
+                    response = JSON.parse(response);
+                    data = response.data;
+                    status = response.status;
+                }
             }
         } catch (err) {
             status = 500;
