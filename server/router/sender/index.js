@@ -15,14 +15,19 @@ class Sender {
         try {
             if (typeof api != 'undefined') {
                 const url = `${ api.path }/${ query }`;
-
                 const key = `response_api_${ slug }_endpoint_${ query }`;
-                let response = await cache.get(key);
-                
-                const now = Date.now();
+
+                let response = null;
+                let now;
+
+                if (typeof api.cache != 'undefined') {
+                    response = await cache.get(key);
+                    now = Date.now();
+                }
+        
                 const diff = (response != null) ? now - JSON.parse(response).timestamp : 0;
 
-                if (response == null || diff > api.cache) {
+                if (typeof api.cache == 'undefined' || response == null || diff > api.cache) {
                     data = await fetch(url, { method });
                     status = data.status;
                     data = await data.json();
@@ -40,6 +45,7 @@ class Sender {
                 }
             }
         } catch (err) {
+            console.log(err);
             status = 500;
         }
 
