@@ -6,15 +6,15 @@ Servidor de proxy inverso configurable desarrollado en NodeJS y con cache en Red
 
 Para comenzar a utilizar el servidor de proxy inverso, debe configurarlo creando el archivo **index.js** dentro de la carpeta **"/config"**, utilizar **"index.example.js"** como base.
 
-### Methods
+### `Methods`
 
 Arreglo con los métodos aceptados por el proxy
 
-### ValidationsTypes 
+### `ValidationsTypes`
 
 Tipos de validaciones aceptadas por el proxy (Dejar tal cual el archivo de ejemplo)
 
-### Apis
+### `Apis`
 
 Configuración individual para cada API, es un objeto en el cual la llave es el **"slug"** con el cual se reconoce cada API y el valor es otro objeto en el cual se setean la configuraciones individuales para cada API.
 
